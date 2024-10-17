@@ -1,0 +1,326 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public abstract class Robot
+{
+    protected string Nama;
+    protected int Energi;
+    protected int Armor;
+    protected int Serangan;
+
+    protected Robot(string nama, int energi, int armor, int serangan)
+    {
+        Nama = nama;
+        Energi = energi;
+        Armor = armor;
+        Serangan = serangan;
+    }
+
+    public string DapatkanNama() { return Nama; }
+    public int DapatkanEnergi() { return Energi; }
+    public int DapatkanArmor() { return Armor; }
+    public int DapatkanSerangan() { return Serangan; }
+
+    public abstract void Serang(Robot target);
+    public abstract void GunakanKemampuan(IKemampuan kemampuan);
+
+    public virtual void CetakInfo()
+    {
+        Console.WriteLine($"Nama: {Nama}");
+        Console.WriteLine($"Energi: {Energi}");
+        Console.WriteLine($"Armor: {Armor}");
+        Console.WriteLine($"Serangan: {Serangan}");
+    }
+
+    public void KurangiEnergi(int jumlah)
+    {
+        Energi -= jumlah;
+        if (Energi < 0) Energi = 0;
+    }
+
+    public void PulihkanEnergi(int jumlah)
+    {
+        Energi += jumlah;
+    }
+}
+
+public class RobotBiasa : Robot
+{
+    public RobotBiasa(string nama, int energi, int armor, int serangan) : base(nama, energi, armor, serangan) { }
+
+    public override void Serang(Robot target)
+    {
+        int kerusakan = this.Serangan - target.DapatkanArmor();
+        if (kerusakan > 0)
+        {
+            target.KurangiEnergi(kerusakan);
+            Console.WriteLine($"{this.Nama} menyerang {target.DapatkanNama()} dan menyebabkan {kerusakan} kerusakan!");
+        }
+        else
+        {
+            Console.WriteLine($"{this.Nama} menyerang {target.DapatkanNama()} tetapi tidak menyebabkan kerusakan!");
+        }
+    }
+
+    public override void GunakanKemampuan(IKemampuan kemampuan)
+    {
+        kemampuan.Aktifkan(this);
+    }
+}
+
+public class BosRobot : Robot
+{
+    public BosRobot(string nama, int energi, int armor, int serangan) : base(nama, energi, armor, serangan) { }
+
+    public override void Serang(Robot target)
+    {
+        int kerusakan = this.Serangan - target.DapatkanArmor();
+        if (kerusakan > 0)
+        {
+            target.KurangiEnergi(kerusakan * 2);  // Robot Bos memiliki serangan yang lebih kuat
+            Console.WriteLine($"{this.Nama} menyerang {target.DapatkanNama()} dan menyebabkan {kerusakan * 2} kerusakan!");
+        }
+        else
+        {
+            Console.WriteLine($"{this.Nama} menyerang {target.DapatkanNama()} tetapi tidak menyebabkan kerusakan!");
+        }
+    }
+
+    public override void GunakanKemampuan(IKemampuan kemampuan)
+    {
+        kemampuan.Aktifkan(this);
+    }
+
+    public void Mati()
+    {
+        Console.WriteLine($"{this.Nama} telah dikalahkan!");
+    }
+}
+
+public interface IKemampuan
+{
+    void Aktifkan(Robot robot);
+    bool SedangDalamWaktuTunggu();
+    void AturUlangWaktuTunggu();
+}
+
+public class Perbaikan : IKemampuan
+{
+    private bool WaktuTunggu = false;
+
+    public void Aktifkan(Robot robot)
+    {
+        if (!WaktuTunggu)
+        {
+            int jumlahPerbaikan = 20;
+            robot.PulihkanEnergi(jumlahPerbaikan);
+            Console.WriteLine($"{robot.DapatkanNama()} menggunakan Perbaikan dan memulihkan {jumlahPerbaikan} energi!");
+            WaktuTunggu = true;
+        }
+        else
+        {
+            Console.WriteLine("Kemampuan Perbaikan sedang dalam waktu tunggu!");
+        }
+    }
+
+    public bool SedangDalamWaktuTunggu() { return WaktuTunggu; }
+    public void AturUlangWaktuTunggu() { WaktuTunggu = false; }
+}
+
+public class SeranganListrik : IKemampuan
+{
+    private bool WaktuTunggu = false;
+
+    public void Aktifkan(Robot robot)
+    {
+        if (!WaktuTunggu)
+        {
+            Console.WriteLine($"{robot.DapatkanNama()} menggunakan Serangan Listrik!");
+            // Implementasi efek serangan listrik
+            WaktuTunggu = true;
+        }
+        else
+        {
+            Console.WriteLine("Kemampuan Serangan Listrik sedang dalam waktu tunggu!");
+        }
+    }
+
+    public bool SedangDalamWaktuTunggu() { return WaktuTunggu; }
+    public void AturUlangWaktuTunggu() { WaktuTunggu = false; }
+}
+
+public class SeranganPlasma : IKemampuan
+{
+    private bool WaktuTunggu = false;
+
+    public void Aktifkan(Robot robot)
+    {
+        if (!WaktuTunggu)
+        {
+            Console.WriteLine($"{robot.DapatkanNama()} menggunakan Serangan Plasma!");
+            // Implementasi efek serangan plasma
+            WaktuTunggu = true;
+        }
+        else
+        {
+            Console.WriteLine("Kemampuan Serangan Plasma sedang dalam waktu tunggu!");
+        }
+    }
+
+    public bool SedangDalamWaktuTunggu() { return WaktuTunggu; }
+    public void AturUlangWaktuTunggu() { WaktuTunggu = false; }
+}
+
+public class PelindungSuper : IKemampuan
+{
+    private bool WaktuTunggu = false;
+
+    public void Aktifkan(Robot robot)
+    {
+        if (!WaktuTunggu)
+        {
+            Console.WriteLine($"{robot.DapatkanNama()} mengaktifkan Pelindung Super!");
+            // Implementasi efek pelindung super
+            WaktuTunggu = true;
+        }
+        else
+        {
+            Console.WriteLine("Kemampuan Pelindung Super sedang dalam waktu tunggu!");
+        }
+    }
+
+    public bool SedangDalamWaktuTunggu() { return WaktuTunggu; }
+    public void AturUlangWaktuTunggu() { WaktuTunggu = false; }
+}
+
+public class Permainan
+{
+    private List<Robot> daftarRobot;
+    private BosRobot robotBos;
+    private Random acak;
+
+    public Permainan()
+    {
+        daftarRobot = new List<Robot>();
+        acak = new Random();
+    }
+
+    public void TambahRobot(Robot robot)
+    {
+        daftarRobot.Add(robot);
+    }
+
+    public void AturRobotBos(BosRobot robotBos)
+    {
+        this.robotBos = robotBos;
+    }
+
+    public void MulaiPermainan()
+    {
+        Console.WriteLine("Pertarungan dimulai!");
+        int ronde = 1;
+
+        while (robotBos.DapatkanEnergi() > 0 && !SemuaRobotKalah())
+        {
+            Console.WriteLine($"\n=== Ronde {ronde} ===");
+            foreach (var robot in daftarRobot.Where(r => r.DapatkanEnergi() > 0))
+            {
+                GiliranRobot(robot);
+            }
+            GiliranRobotBos();
+            PulihkanEnergiRobot();
+            AturUlangWaktuTunggu();
+            ronde++;
+        }
+
+        if (robotBos.DapatkanEnergi() <= 0)
+        {
+            Console.WriteLine("Para robot menang! Robot Bos telah dikalahkan!");
+        }
+        else
+        {
+            Console.WriteLine("Robot Bos menang! Semua robot telah dikalahkan!");
+        }
+    }
+
+    private void GiliranRobot(Robot robot)
+    {
+        Console.WriteLine($"\nGiliran {robot.DapatkanNama()}");
+        if (acak.Next(2) == 0)
+        {
+            robot.Serang(robotBos);
+        }
+        else
+        {
+            List<IKemampuan> daftarKemampuan = new List<IKemampuan> { new Perbaikan(), new SeranganListrik(), new SeranganPlasma(), new PelindungSuper() };
+            IKemampuan kemampuanTerpilih = daftarKemampuan[acak.Next(daftarKemampuan.Count)];
+            if (!kemampuanTerpilih.SedangDalamWaktuTunggu())
+            {
+                robot.GunakanKemampuan(kemampuanTerpilih);
+            }
+            else
+            {
+                robot.Serang(robotBos);
+            }
+        }
+    }
+
+    private void GiliranRobotBos()
+    {
+        Console.WriteLine("\nGiliran Robot Bos");
+        Robot target = daftarRobot[acak.Next(daftarRobot.Count)];
+        if (target.DapatkanEnergi() > 0)
+        {
+            robotBos.Serang(target);
+        }
+    }
+
+    private void PulihkanEnergiRobot()
+    {
+        foreach (var robot in daftarRobot.Where(r => r.DapatkanEnergi() > 0))
+        {
+            robot.PulihkanEnergi(5);
+            Console.WriteLine($"{robot.DapatkanNama()} memulihkan 5 energi.");
+        }
+    }
+
+    private void AturUlangWaktuTunggu()
+    {
+        var kemampuanList = daftarRobot.SelectMany(robot => robot.GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            .Where(field => typeof(IKemampuan).IsAssignableFrom(field.FieldType))
+            .Select(field => field.GetValue(robot) as IKemampuan))
+            .ToList();
+
+        foreach (var Ikemampuan in kemampuanList)
+        {
+            Ikemampuan.AturUlangWaktuTunggu();
+        }
+    }
+
+    private bool SemuaRobotKalah()
+    {
+        return daftarRobot.All(robot => robot.DapatkanEnergi() <= 0);
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Permainan permainan = new Permainan();
+
+        RobotBiasa robot1 = new RobotBiasa("Robocop", 100, 10, 20);
+        RobotBiasa robot2 = new RobotBiasa("Terminator", 120, 15, 18);
+        RobotBiasa robot3 = new RobotBiasa("Wall-E", 80, 8, 15);
+
+        permainan.TambahRobot(robot1);
+        permainan.TambahRobot(robot2);
+        permainan.TambahRobot(robot3);
+
+        BosRobot robotBos = new BosRobot("Megatron", 300, 25, 30);
+        permainan.AturRobotBos(robotBos);
+
+        permainan.MulaiPermainan();
+    }
+}
